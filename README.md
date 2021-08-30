@@ -1,2 +1,9 @@
 # adeptia-connect-helmchart
-This repository contains Adeptia Connect Helm package.
+This repository contains Public available Adeptia Connect Helm package.
+
+**Pre-requisites:**
+1) Helm
+
+**Command to install Adeptia Connect Helm Package**
+
+helm upgrade -i adeptia-connect adeptia/ -f adeptia/values.yaml -n < NAMESPACE >
