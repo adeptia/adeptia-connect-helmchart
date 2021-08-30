@@ -369,7 +369,7 @@ global:
         # Print logs level as string ("info") rather than integer (30)
         # USE_HUMAN_READABLE_LOG_LEVELS: true
         METRICS_PORT: 3001
-        VAULT_ADDR: http://52.154.65.176:8200
+        VAULT_ADDR: 
         # Set a role to be used when assuming roles specified in external secret (AWS only)
         # AWS_INTERMEDIATE_ROLE_ARN:
         # AWS_INTERMEDIATE_ROLE_ARN:
@@ -451,7 +451,7 @@ global:
       SSL_KEYSTORE_PATH: keystore/adeptiaBPM.keystore
       BACKEND_DB_TYPE: SQL-Server
       BACKEND_DB_DRIVER_CLASS: com.microsoft.sqlserver.jdbc.SQLServerDriver
-      BACKEND_DB_URL: jdbc:sqlserver://adeptia-adeptiaconnectdb.database.windows.net:1433;database=helm-backend
+      BACKEND_DB_URL: 
       BACKEND_DB_PASSWORD: 
       BACKEND_DB_DIALECT: org.hibernate.dialect.SQLServer2008Dialect
       BACKEND_DB_USERNAME: 
