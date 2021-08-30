@@ -6,4 +6,4 @@ This repository contains Public available Adeptia Connect Helm package.
 
 **Command to install Adeptia Connect Helm Package**
 
-helm upgrade -i adeptia-connect adeptia/ -f adeptia/values.yaml -n < NAMESPACE >
+helm install adeptia-connect adeptia/ -f adeptia/values.yaml -n < NAMESPACE >
