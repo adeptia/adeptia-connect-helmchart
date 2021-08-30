@@ -1,4 +1,4 @@
-# adeptia-connect-helmchart
+# Adeptia Connect Helm Package
 This repository contains Public available Adeptia Connect Helm package.
 
 **Pre-requisites:**
