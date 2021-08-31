@@ -1,0 +1,561 @@
+global:
+  config:
+    securityContext:
+      capabilities:
+        drop:
+          - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 12000
+      allowPrivilegeEscalation: false
+    name: adeptia
+    env: dev
+    image:
+      pullSecret:
+        enabled: true
+        registry: 
+        username: 
+        password: 
+    serviceAccount:
+      create: true
+      annotations:
+        # This is what defines this resource as a hook. Without this line, the
+        # job is considered part of the release.
+        "helm.sh/hook": pre-install,pre-upgrade
+        "helm.sh/hook-weight": "-11"
+      name: adeptia
+    imagePullSecrets: adeptia-image-secret
+    dbPullSecrets: adeptia-db-secret
+    serviceAccountName: adeptia
+    service:
+      type: ClusterIP
+    #---Logging-----
+    logging:
+      enabled: false
+    #---Monitoring-----
+    monitoring:
+      enabled: false
+  #--------------------------------------------
+  envSecret:
+    BACKEND_DB_USERNAME: 
+    BACKEND_DB_PASSWORD: 
+    LOG_DB_USERNAME: 
+    LOG_DB_PASSWORD: 
+    LOG_ARCHIVE_DB_USERNAME: 
+    LOG_ARCHIVE_DB_PASSWORD: 
+    QUARTZ_DB_USERNAME: 
+    QUARTZ_DB_PASSWORD: 
+  #--------------------------------------------
+  environmentVariables:
+    DISPLAY_NAME : Adeptia-Connect
+    BACKEND_DB_URL : 
+    BACKEND_DB_DRIVER_CLASS : com.microsoft.sqlserver.jdbc.SQLServerDriver
+    BACKEND_DB_TYPE : SQL-Server
+    BACKEND_DB_DIALECT : org.hibernate.dialect.SQLServer2008Dialect
+    LOG_DB_DRIVER_CLASS: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    LOG_DB_URL: 
+    LOG_DB_TYPE: SQL-Server
+    LOG_DB_DIALECT: org.hibernate.dialect.SQLServer2008Dialect
+    LOG_ARCHIVE_DB_URL: 
+    LOG_ARCHIVE_DB_DRIVER_CLASS: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    LOG_ARCHIVE_DB_TYPE: SQL-Server
+    LOG_ARCHIVE_DB_DIALECT: org.hibernate.dialect.SQLServer2008Dialect
+    QUARTZ_DB_URL: 
+    QUARTZ_DB_DRIVER_CLASS: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    QUARTZ_DB_TYPE: SQL-Server
+    QUARTZ_DB_DIALECT: org.hibernate.dialect.SQLServer2008Dialect
+    GATEWAY_SERVICE_URL: https://gateway
+    SSL_ENABLED: true
+    RABBITMQ_QUEUE: runtime
+    #Below are common properties
+    BACKEND_DB_MAX_ACTIVE : 50
+    BACKEND_DB_MAX_STATEMENTS : 0
+    BACKEND_DB_MAX_WAIT: 600000
+    BACKEND_DB_MIN_IDLE : 10
+    BACKEND_DB_MIN_EVICTABLE_IDLE_TIME_MILLIS: "3600000"
+    BACKEND_DB_TEST_ON_BORROW: true
+    BACKEND_DB_VALIDATION_QUERY: SELECT 1
+    BACKEND_DB_POOL_TYPE: hikari
+    LOG_DB_MAX_ACTIVE: 25
+    LOG_DB_MAX_STATEMENTS: 0
+    LOG_DB_MAX_WAIT:  600000
+    LOG_DB_MIN_IDLE : 5
+    LOG_DB_MIN_EVICTABLE_IDLE_TIME_MILLIS: "3600000"
+    LOG_DB_TEST_ON_BORROW: true
+    LOG_DB_VALIDATION_QUERY: SELECT 1
+    LOG_DB_POOL_TYPE: hikari
+    SSL_KEYSTORE_PATH: keystore/adeptiaBPM.keystore
+    SSL_KEYSTORE_PASSWORD: password
+    SSL_KEYSTORE_TYPE: JKS
+    SSL_TRUSTSTORE_PATH: truststore/cacerts
+    SSL_TRUSTSTORE_PASSWORD: changeit
+    SSL_TRUSTSTORE_TYPE: JKS
+    USE_SUBJECT_CREDS_ONLY: false
+    MAINTENANCE_ENABLED: true
+    MAINTENANCE_QUEUE_ENABLED: true
+    SHARED_PATH: /shared
+    MAIL_OAUTH_HOSTNAME: outlook.office365.com
+    JAAS_CONFIG: jaas.config
+    KERBEROS_CONFIG: krb5.con
+    MIGRATION_XML_FILE_PATH: ${SHARED_PATH}/accelerators
+    #Runtime properties
+    CHARACTER_SET_ENCODING: UTF-8
+    IO_POOL_ENABLED: 'no'
+    EXCEL_MIN_INFLATE_RATIO: 1
+    RABBITMQ_CONCURRENCY: 5
+    RABBITMQ_MAINTENANCE_QUEUE:
+    JAVA_OPTS: -Xms1024M -Xmx2048M -Djdk.tls.useExtendedMasterSecret=false
+
+  #--------------------------------------------
+  webrunner:
+    replicaCount: 1
+    image:
+      repository: public.ecr.aws/p2x5n4m0/adeptia-connect/webrunner
+      pullPolicy: Always
+      tag: 4.0_beta
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 10
+      targetCPUUtilizationPercentage: 80
+    service:
+      type: ClusterIP
+      port: 443
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 2048Mi
+      requests:
+        cpu: 300m
+        memory: 1024Mi
+    #LivenessProbe Values for Webrunner can be defined here
+    livenessProbe:
+      httpGet:
+        scheme: HTTPS
+        path: /adeptia/health/liveness
+        port: 443
+      timeoutSeconds: 10
+      initialDelaySeconds: 30
+      periodSeconds: 30
+      failureThreshold: 3
+      successThreshold: 1
+    #ReadinessProbe Values for Webrunner can be defined here
+    readinessProbe:
+      httpGet:
+        scheme: HTTPS
+        path: /adeptia/health/readiness
+        port: 443
+      timeoutSeconds: 10
+      initialDelaySeconds: 30
+      periodSeconds: 30
+      failureThreshold: 3
+      successThreshold: 1
+    #StartupProbe Values for Webrunner can be defined here
+    startupProbe:
+      httpGet:
+        scheme: HTTPS
+        path: /adeptia/health/startup
+        port: 443
+      timeoutSeconds: 20
+      initialDelaySeconds: 90
+      periodSeconds: 30
+      failureThreshold: 3
+      successThreshold: 1
+    podAnnotations: {}
+    podSecurityContext: {}
+    securityContext: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  #--------------------------------------------
+  portal:
+    name: portal
+    replicaCount: 1
+    image:
+      repository: public.ecr.aws/p2x5n4m0/adeptia-connect/portal
+      pullPolicy: Always
+      tag: 4.0_beta
+    ports:
+        name: http
+        containerPort: 443
+        protocol: TCP
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 10
+      targetCPUUtilizationPercentage: 80
+    service:
+      type: ClusterIP
+      port: 443
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 2048Mi
+      requests:
+        cpu: 100m
+        memory: 512Mi
+    livenessProbe:
+      httpGet:
+        scheme: HTTPS
+        path: /health/liveness
+        port: 443
+      timeoutSeconds: 10
+      initialDelaySeconds: 30
+      periodSeconds: 30
+      failureThreshold: 3
+      successThreshold: 1
+    readinessProbe:
+      httpGet:
+        scheme: HTTPS
+        path: /health/readiness
+        port: 443
+      timeoutSeconds: 10
+      initialDelaySeconds: 30
+      periodSeconds: 30
+      failureThreshold: 3
+      successThreshold: 1
+    startupProbe:
+      httpGet:
+        scheme: HTTPS
+        path: /health/startup
+        port: 443
+      timeoutSeconds: 10
+      initialDelaySeconds: 45
+      periodSeconds: 30
+      failureThreshold: 3
+      successThreshold: 1
+    podAnnotations: {}
+    podSecurityContext: {}
+    securityContext: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  #--------------------------------------------
+  gatewayData:
+    name: gateway
+    env: dev
+    replicaCount: 1
+    image:
+      repository: public.ecr.aws/p2x5n4m0/adeptia-connect/gateway
+      pullPolicy: Always
+      tag: 4.0_beta
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 10
+      targetCPUUtilizationPercentage: 80
+    service:
+      type: LoadBalancer
+      port: 443
+      targetPort: 443
+    revisionHistoryLimit: 10
+    progressDeadlineSeconds: 600
+    terminationGracePeriodSeconds: 30
+    containerPort: 443
+    schedulerName: default-scheduler
+    restartPolicy: Always
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    dnsPolicy: ClusterFirst
+    defaultMode: 420
+    podAnnotations: {}
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 2048Mi
+      requests:
+        cpu: 100m
+        memory: 512Mi
+    livenessProbe:
+      httpGet:
+        scheme: HTTPS
+        path: /health/liveness
+        port: 443
+      timeoutSeconds: 10
+      initialDelaySeconds: 30
+      periodSeconds: 30
+      failureThreshold: 3
+      successThreshold: 1
+    readinessProbe:
+      httpGet:
+        scheme: HTTPS
+        path: /health/readiness
+        port: 443
+      timeoutSeconds: 10
+      initialDelaySeconds: 30
+      periodSeconds: 30
+      failureThreshold: 3
+      successThreshold: 1
+    startupProbe:
+      httpGet:
+        scheme: HTTPS
+        path: /health/startup
+        port: 443
+      timeoutSeconds: 20
+      initialDelaySeconds: 80
+      periodSeconds: 30
+      failureThreshold: 3
+      successThreshold: 1
+    podSecurityContext: {}
+    securityContext: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+#-------------------------
+  infra:
+    clusterrolename: adeptia-connect
+    clusterrolebindingname: adeptia-connect
+    pvc:
+      name: pv-claim-adeptia-connect
+      mountPath: /shared
+      autoscalingFile: /shared/AUTOSCALING
+      annotations:
+        storageProvisioner: kubernetes.io/azure-file
+        defaultStorageClass: default
+        finalizers: kubernetes.io/pvc-protection
+      persistence:
+        enabled: true
+        storageClass: azurefile
+        accessMode: ReadWriteMany
+        size: 250Gi
+      volumeMode: Filesystem
+    #--------------------------------------------
+    secret:
+      enabled: false
+      vaultMountPoint: vault-method
+      vaultRole: vault-role
+      dbDataFrom: kv/data/adeptia/db-secret
+      imageDataFrom: kv/data/adeptia/image-secret
+      env:
+        AWS_REGION: us-west-2
+        AWS_DEFAULT_REGION: us-west-2
+        POLLER_INTERVAL_MILLISECONDS: 10000  # Caution, setting this frequency may incur additional charges on some platforms
+        WATCH_TIMEOUT: 60000
+        WATCHED_NAMESPACES: ""  # Comma separated list of namespaces, empty or unset means ALL namespaces.
+        LOG_LEVEL: info
+        LOG_MESSAGE_KEY: "msg"
+        #Akeyless rest-v2 endpoint
+        AKEYLESS_API_ENDPOINT: https://api.akeyless.io
+        AKEYLESS_ACCESS_ID:
+        #AKEYLESS_ACCESS_TYPE can be one of the following: aws_iam/azure_ad/gcp/access_key
+        AKEYLESS_ACCESS_TYPE:
+        #AKEYLESS_ACCESS_TYPE_PARAM can be one of the following: gcp-audience/azure-obj-id/access-key
+        #AKEYLESS_ACCESS_TYPE_PARAM:
+        # Print logs level as string ("info") rather than integer (30)
+        # USE_HUMAN_READABLE_LOG_LEVELS: true
+        METRICS_PORT: 3001
+        VAULT_ADDR: http://domain.com
+        # Set a role to be used when assuming roles specified in external secret (AWS only)
+        # AWS_INTERMEDIATE_ROLE_ARN:
+        # AWS_INTERMEDIATE_ROLE_ARN:
+        # GOOGLE_APPLICATION_CREDENTIALS: /app/gcp-creds/gcp-creds.json
+        # Use custom endpoints for FIPS compliance
+        # AWS_STS_ENDPOINT: https://sts-fips.us-east-1.amazonaws.com
+        # AWS_SSM_ENDPOINT: http://ssm-fips.us-east-1.amazonaws.com
+        # AWS_SM_ENDPOINT: http://secretsmanager-fips.us-east-1.amazonaws.com
+    #--------------------------------------------
+    elasticSearch:
+      image: public.ecr.aws/p2x5n4m0/adeptia-connect/elasticsearch
+      tag: 4.0_beta
+      imagePullPolicy: Always
+      persistence:
+        enabled: true
+        annotations: { }
+      updateStrategy: RollingUpdate
+      podManagementPolicy: "Parallel"
+      replicas: 3
+      minimumMasterNodes: 2
+    #--------------------------------------------
+    kibana:
+      image: public.ecr.aws/p2x5n4m0/adeptia-connect/kibana
+      tag: 4.0_beta
+      imagePullPolicy: Always
+      replicas: 1
+    #--------------------------------------------
+    fluentd:
+      image: public.ecr.aws/p2x5n4m0/adeptia-connect/fluent
+      tag: 4.0_beta
+      imagePullPolicy: Always
+      replicas: 1
+      resources:
+      limits:
+        cpu: 1000m
+        memory: 2048Mi
+      requests:
+        cpu: 100m
+        memory: 512Mi
+  #--------------------------------------------
+  rabbitmq:
+    replicaCount: 1
+    image:
+      repository: public.ecr.aws/p2x5n4m0/adeptia-connect/rabbitmq
+      tag: 1.0.0
+      debug: false
+      pullPolicy: Always
+  #-----------------------------------------------
+  autoscaler:
+    replicaCount: 1
+    image:
+      repository: public.ecr.aws/p2x5n4m0/adeptia-connect/autoscaler
+      pullPolicy: Always
+      tag: 4.0_beta
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 2048Mi
+      requests:
+        cpu: 100m
+        memory: 512Mi
+    env:
+      INTERVAL: 50
+      RABBIT_HOST: rabbitmq
+      RABBIT_USER: adeptia
+      RABBIT_PASS: adeptia
+      THRESHOLD: 50
+      LOGS: HIGH
+      SLACK_HOOK: ""
+      MIN_POD: 2
+      MAX_POD: 5
+      MAX_QUEUE: 5
+      NAMESPACE:
+      DEPLOYMENT: runtime
+      RABBITMQ_QUEUE: runtime
+      DEFAULT_AUTOSCALING: ""
+    runtimeImage:
+      RUNTIME_IMAGE: public.ecr.aws/p2x5n4m0/adeptia-connect/runtime
+      RUNTIME_TAG: 4.0_beta
+      RUNTIME_LIMITS_CPU: 1000m
+      RUNTIME_LIMITS_MEMORY: 3072Mi
+      RUNTIME_REQUESTS_CPU: 200m
+      RUNTIME_REQUESTS_MEMORY: 1024Mi
+      TERMINATIONGRACEPERIODSECONDS: 500
+      JAAS_CONFIG: jaas.config
+      KERBEROS_CONFIG: krb5.conf
+      USE_SUBJECT_CREDS_ONLY: false
+
+  #--------------------------------------------
+  databaseMigration:
+    image:
+      repository: public.ecr.aws/p2x5n4m0/adeptia-connect/databasemigration
+      pullPolicy: Always
+      tag: 4.0_beta
+    annotations:
+      # This is what defines this resource as a hook. Without this line, the
+      # job is considered part of the release.
+      "helm.sh/hook": pre-install,pre-upgrade
+      "helm.sh/hook-weight": "-1"
+      "helm.sh/hook-delete-policy": hook-succeeded
+
+    environmentVariables:
+      DB_UPDATE_MODE: deployment
+      LOGGING_LEVEL_ROOT: DEBUG
+      BUILD_TAG: 4.0.beta
+      IS_LOG_AND_ARCHIVAL_DB_SAME: true
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: INFO
+      SPRING_RETRY_POLICY_MAXATTEMPTS: 10
+      SPRING_BACKOFF_POLICY_MAXINTERVAL: 30000
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 2048Mi
+      requests:
+        cpu: 100m
+        memory: 512Mi
+  #-----------------------------------------------
+
+  migration:
+    image:
+      repository: public.ecr.aws/p2x5n4m0/adeptia-connect/migration
+      pullPolicy: Always
+      # Overrides the image tag whose default is the chart appVersion.
+      tag: 4.0_beta
+
+  #-----------------------------------------------
+
+  static:
+    image:
+      repository: public.ecr.aws/p2x5n4m0/adeptia-connect/shared
+      pullPolicy: Always
+      # Overrides the image tag whose default is the chart appVersion.
+      tag: 4.0_beta
+  #-----------------------------------------------
+  event:
+    replicaCount: 1
+    name: event
+    image:
+      repository: public.ecr.aws/p2x5n4m0/adeptia-connect/event
+      pullPolicy: Always
+      # Overrides the image tag whose default is the chart appVersion.
+      tag: 4.0_beta
+    service:
+      type: ClusterIP
+      port: 443
+    ports:
+        name: https
+        containerPort: 443
+        protocol: TCP
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 2048Mi
+      requests:
+        cpu: 100m
+        memory: 512Mi
+    livenessProbe:
+      httpGet:
+        scheme: HTTPS
+        path: /event/health/liveness
+        port: 443
+      timeoutSeconds: 10
+      initialDelaySeconds: 30
+      periodSeconds: 30
+      failureThreshold: 3
+      successThreshold: 1
+    readinessProbe:
+      httpGet:
+        scheme: HTTPS
+        path: /event/health/readiness
+        port: 443
+      timeoutSeconds: 10
+      initialDelaySeconds: 30
+      periodSeconds: 30
+      failureThreshold: 3
+      successThreshold: 1
+    startupProbe:
+      httpGet:
+        scheme: HTTPS
+        path: /event/health/startup
+        port: 443
+      timeoutSeconds: 10
+      initialDelaySeconds: 45
+      periodSeconds: 30
+      failureThreshold: 3
+      successThreshold: 1
+  #-----------------------------------------------
+  grafana:
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 2048Mi
+      requests:
+        cpu: 100m
+        memory: 512Mi
+  #-----------------------------------------------
+  prometheus:
+    alertmanager:
+      resources:
+        limits:
+          cpu: 1000m
+          memory: 2048Mi
+        requests:
+          cpu: 100m
+          memory: 512Mi
+    pushgateway:
+      resources:
+        limits:
+          cpu: 1000m
+          memory: 2048Mi
+        requests:
+          cpu: 100m
+          memory: 512Mi
