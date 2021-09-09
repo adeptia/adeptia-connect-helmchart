@@ -110,7 +110,7 @@ global:
   webrunner:
     replicaCount: 1
     image:
-      repository: public.ecr.aws/p2x5n4m0/adeptia-connect/webrunner
+      repository: adeptiainc/adeptia-connect-webrunner
       pullPolicy: Always
       tag: 4.0_beta
     autoscaling:
@@ -172,7 +172,7 @@ global:
     name: portal
     replicaCount: 1
     image:
-      repository: public.ecr.aws/p2x5n4m0/adeptia-connect/portal
+      repository: adeptiainc/adeptia-connect-portal
       pullPolicy: Always
       tag: 4.0_beta
     ports:
@@ -236,7 +236,7 @@ global:
     env: dev
     replicaCount: 1
     image:
-      repository: public.ecr.aws/p2x5n4m0/adeptia-connect/gateway
+      repository: adeptiainc/adeptia-connect-gateway
       pullPolicy: Always
       tag: 4.0_beta
     autoscaling:
@@ -356,7 +356,7 @@ global:
         # AWS_SM_ENDPOINT: http://secretsmanager-fips.us-east-1.amazonaws.com
     #--------------------------------------------
     elasticSearch:
-      image: public.ecr.aws/p2x5n4m0/adeptia-connect/elasticsearch
+      image: adeptiainc/elasticsearch
       tag: 4.0_beta
       imagePullPolicy: Always
       persistence:
@@ -364,17 +364,17 @@ global:
         annotations: { }
       updateStrategy: RollingUpdate
       podManagementPolicy: "Parallel"
-      replicas: 3
-      minimumMasterNodes: 2
+      replicas: 1
+      minimumMasterNodes: 1
     #--------------------------------------------
     kibana:
-      image: public.ecr.aws/p2x5n4m0/adeptia-connect/kibana
+      image: adeptiainc/kibana
       tag: 4.0_beta
       imagePullPolicy: Always
       replicas: 1
     #--------------------------------------------
     fluentd:
-      image: public.ecr.aws/p2x5n4m0/adeptia-connect/fluent
+      image: adeptiainc/fluentd
       tag: 4.0_beta
       imagePullPolicy: Always
       replicas: 1
@@ -389,7 +389,7 @@ global:
   rabbitmq:
     replicaCount: 1
     image:
-      repository: public.ecr.aws/p2x5n4m0/adeptia-connect/rabbitmq
+      repository: adeptiainc/adeptia-connect-rabbitmq
       tag: 4.0_beta
       debug: false
       pullPolicy: Always
@@ -397,7 +397,7 @@ global:
   autoscaler:
     replicaCount: 1
     image:
-      repository: public.ecr.aws/p2x5n4m0/adeptia-connect/autoscaler
+      repository: adeptiainc/adeptia-connect-autoscaler
       pullPolicy: Always
       tag: 4.0_beta
     resources:
@@ -423,7 +423,7 @@ global:
       RABBITMQ_QUEUE: runtime
       DEFAULT_AUTOSCALING: ""
     runtimeImage:
-      RUNTIME_IMAGE: public.ecr.aws/p2x5n4m0/adeptia-connect/runtime
+      RUNTIME_IMAGE: adeptiainc/adeptia-connect-runtime
       RUNTIME_TAG: 4.0_beta
       RUNTIME_LIMITS_CPU: 1000m
       RUNTIME_LIMITS_MEMORY: 3072Mi
@@ -437,7 +437,7 @@ global:
   #--------------------------------------------
   databaseMigration:
     image:
-      repository: public.ecr.aws/p2x5n4m0/adeptia-connect/databasemigration
+      repository: adeptiainc/adeptia-connect-databasemigration
       pullPolicy: Always
       tag: 4.0_beta
     annotations:
@@ -466,7 +466,7 @@ global:
 
   migration:
     image:
-      repository: public.ecr.aws/p2x5n4m0/adeptia-connect/migration
+      repository: adeptiainc/adeptia-connect-migration
       pullPolicy: Always
       # Overrides the image tag whose default is the chart appVersion.
       tag: 4.0_beta
@@ -475,7 +475,7 @@ global:
 
   static:
     image:
-      repository: public.ecr.aws/p2x5n4m0/adeptia-connect/shared
+      repository: adeptiainc/adeptia-connect-shared
       pullPolicy: Always
       # Overrides the image tag whose default is the chart appVersion.
       tag: 4.0_beta
@@ -484,7 +484,7 @@ global:
     replicaCount: 1
     name: event
     image:
-      repository: public.ecr.aws/p2x5n4m0/adeptia-connect/event
+      repository: adeptiainc/adeptia-connect-event
       pullPolicy: Always
       # Overrides the image tag whose default is the chart appVersion.
       tag: 4.0_beta
